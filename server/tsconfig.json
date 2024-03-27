@@ -1,0 +1,3 @@
+r{
+  "extends": "../.nuxt/tsconfig.server.json"
+}
