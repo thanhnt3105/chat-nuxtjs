@@ -37,7 +37,6 @@ const selectedUser = ref<User | null>(null);
 const error = ref(false);
 
 const authService = useAuth();
-const currentUser = authService.user;
 
 const handleSearch = async () => {
   const q = query(
@@ -61,11 +60,11 @@ const handleKey = (e: any) => {
 };
 
 const handleSelect = async () => {
-  if (!currentUser.value || !selectedUser.value) return;
+  if (!authService.$state.user || !selectedUser.value) return;
   const combinedId =
-    currentUser.value.uid > selectedUser.value.uid
-      ? currentUser.value.uid + selectedUser.value.uid
-      : selectedUser.value.uid + currentUser.value.uid;
+    authService.$state.user.uid > selectedUser.value.uid
+      ? authService.$state.user.uid + selectedUser.value.uid
+      : selectedUser.value.uid + authService.$state.user.uid;
   try {
     const res = await getDoc(doc(db, "chats", combinedId));
 
@@ -74,7 +73,7 @@ const handleSelect = async () => {
       await setDoc(doc(db, "chats", combinedId), { messages: [] });
 
       //create user chats
-      await updateDoc(doc(db, "userChats", currentUser.value.uid), {
+      await updateDoc(doc(db, "userChats", authService.$state.user.uid), {
         [combinedId + ".userInfo"]: {
           uid: selectedUser.value.uid,
           displayName: selectedUser.value.displayName,
@@ -85,9 +84,9 @@ const handleSelect = async () => {
 
       await updateDoc(doc(db, "userChats", selectedUser.value.uid), {
         [combinedId + ".userInfo"]: {
-          uid: currentUser.value.uid,
-          displayName: currentUser.value.displayName,
-          photoURL: currentUser.value.photoURL,
+          uid: authService.$state.user.uid,
+          displayName: authService.$state.user.displayName,
+          photoURL: authService.$state.user.photoURL,
         },
         [combinedId + ".date"]: serverTimestamp(),
       });

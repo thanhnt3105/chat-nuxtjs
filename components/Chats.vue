@@ -25,33 +25,22 @@ const chats = ref([]);
 const authService = useAuth();
 const chatDetail = useChat();
 
-const currentUser = ref(null);
-
-onMounted(async () => {
-  try {
-    currentUser.value = await authService.getCurrentUser();
-  } catch (error) {
-    console.error("Failed to fetch current user:", error);
-  }
-});
-
-let unsub: any;
-
-onUnmounted(() => {
-  if (unsub) unsub();
-});
-
 const handleSelect = (u: any) => {
   chatDetail.updateCurrentChat(u);
 };
 
+let unsub: any;
 watch(
-  () => currentUser.value,
-  async (newVal) => {
-    if (!newVal) return;
-    unsub = onSnapshot(doc(db, "userChats", newVal.uid), (doc) => {
+  () => authService.$state.user,
+  async (user) => {
+    if (!user) return;
+    unsub = onSnapshot(doc(db, "userChats", user.uid), (doc) => {
       chats.value = doc.data() as any;
     });
   }
 );
+
+onUnmounted(() => {
+  if (unsub) unsub();
+});
 </script>
